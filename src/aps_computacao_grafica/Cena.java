@@ -46,6 +46,9 @@ public class Cena implements GLEventListener, KeyListener {
     private boolean decrementaX;
     private boolean decrementaY;
 
+    private boolean inicio = true;
+    private boolean pause = false;
+
     private int valorIncrementoX;
     private int valorIncrementoY;
     private int valorDecrementoX;
@@ -63,7 +66,7 @@ public class Cena implements GLEventListener, KeyListener {
     public static final String FACE4 = "imagens/dado/4_dado.png";
     public static final String FACE5 = "imagens/dado/5_dado.png";
     public static final String FACE6 = "imagens/dado/6_dado.png";
-    public static final String BOLA = "imagens/pong/bola.jfif";
+    public static final String BOLA = "imagens/pong/bola-tenis.jpg";
     public static final String BARRA = "imagens/pong/barra.jfif";
 
     private int filtro = GL2.GL_LINEAR; ////GL_NEAREST ou GL_LINEAR
@@ -91,41 +94,55 @@ public class Cena implements GLEventListener, KeyListener {
         //obtem o contexto Opengl
         gl = drawable.getGL().getGL2();
         glut = new GLUT(); //objeto da biblioteca glut
-
         //define a cor da janela (R, G, G, alpha)
-        gl.glClearColor(1, 1, 1, 0);
+        gl.glClearColor(0, 0, 0, 0);
         //limpa a janela com a cor especificada
         //limpa o buffer de profundidade
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
         gl.glLoadIdentity(); //lê a matriz identidade
+        if (inicio) {
+            desenhaTextoGrande(gl, -5, 0, "PONG");
+            desenhaTextoPequeno(gl, -8, -20, "Aperte Enter para iniciar");
+        } else {
+            if (pause) {
+                desenhaTextoGrande(gl, 0, 0, "PAUSE");
+            } else {
 
-        /*
+                /*
             desenho da cena        
         *
-         */
-        gl.glColor3f(1.0f, 1.0f, 1.0f);
-        desenhaTexto(gl, -90, 90, "PONG");
-        desenhaTexto(gl, -90, 82, "Aperte uma Tecla para iniciar");
+                 */
+                gl.glColor3f(1.0f, 1.0f, 1.0f);
 
-        // criar a cena aqui....
-        iluminacaoAmbiente();
-        ligaLuz();
+                // criar a cena aqui....
+                iluminacaoAmbiente();
+                ligaLuz();
+                //não é geração de textura automática
+                textura.setAutomatica(false);
 
-        gl.glPushMatrix();
+                //configura os filtros
+                textura.setFiltro(filtro);
+                textura.setModo(modo);
+                textura.setWrap(wrap);
 
-        gl.glRotatef(angulo, 0, 1, 1);
+                animation();
 
-        //não é geração de textura automática
-        textura.setAutomatica(false);
+                gl.glFlush();
+            }
 
-        //configura os filtros
-        textura.setFiltro(filtro);
-        textura.setModo(modo);
-        textura.setWrap(wrap);
+        }
+    }
 
-        animation();
+    public void desenhaTextoGrande(GL2 gl, int x, int y, String frase) {
+        glut = new GLUT(); //objeto da biblioteca glut
+        gl.glRasterPos2f(x, y);
+        glut.glutBitmapString(GLUT.BITMAP_TIMES_ROMAN_24, frase);
+    }
 
-        gl.glFlush();
+    public void desenhaTextoPequeno(GL2 gl, int x, int y, String frase) {
+        glut = new GLUT(); //objeto da biblioteca glut
+        gl.glRasterPos2f(x, y);
+        glut.glutBitmapString(GLUT.BITMAP_TIMES_ROMAN_10, frase);
     }
 
     public void bola() {
@@ -180,52 +197,22 @@ public class Cena implements GLEventListener, KeyListener {
                 primeiraReta = false;
             }
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
         if (verificaBolaRebatida()) {
             incrementaY = true;
             decrementaY = false;
-            if(atualX > barraX){
+            if (atualX > barraX) {
                 incrementaX = true;
                 decrementaX = false;
-            }else if(atualX < barraX){
+            } else if (atualX < barraX) {
                 decrementaX = true;
                 incrementaX = false;
-            }else if(atualX == barraX){
+            } else if (atualX == barraX) {
                 incrementaX = false;
                 decrementaX = false;
-            }        
-                     
-            
+            }
 
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
 
         /*if (verificaBolaRebatida()) {
             incrementaY = true;
@@ -265,7 +252,7 @@ public class Cena implements GLEventListener, KeyListener {
             incrementaX = false;
             decrementaX = true;
         }
-        
+
         //Bateu na parede esquerda
         if (atualX <= -98 && atualX >= -105) {
             if (rand.nextBoolean()) {
@@ -276,7 +263,7 @@ public class Cena implements GLEventListener, KeyListener {
             incrementaX = true;
             decrementaX = false;
         }
-        
+
         //Bateu na parede de cima
         if (atualY >= 98 && atualY <= 105) {
             if (rand.nextBoolean()) {
@@ -355,14 +342,8 @@ public class Cena implements GLEventListener, KeyListener {
         }
     }
 
-    public void desenhaTexto(GL2 gl, int x, int y, String frase) {
-        glut = new GLUT(); //objeto da biblioteca glut
-        gl.glRasterPos2f(x, y);
-        glut.glutBitmapString(GLUT.BITMAP_HELVETICA_12, frase);
-    }
-
     public void iluminacaoAmbiente() {
-        float luzAmbiente[] = {0.2f, 0.2f, 0.2f, 1.0f}; //cor
+        float luzAmbiente[] = {1f, 1f, 0.2f, 1.0f}; //cor
         float posicaoLuz[] = {0.0f, 0.0f, 100.0f, 1.0f}; //pontual
 
         // define parametros de luz de número 0 (zero)
@@ -426,19 +407,29 @@ public class Cena implements GLEventListener, KeyListener {
             //........
         }
         switch (e.getKeyChar()) {
+
             case KeyEvent.VK_ESCAPE:
                 /*  Escape Key */
                 System.exit(0);
                 break;
 
-            case 'a': //inicia animacao
-                barraX = barraX - 3;
+            case 'j'://inicia animacao
+                barraX = barraX - 6;
                 break;
 
-            case 'd': //para a animacao
-                barraX = barraX + 3;
+            case 'l': //para a animacao
+                barraX = barraX + 6;
                 break;
-
+            case 'p':
+                if (pause) {
+                    pause = false;
+                } else {
+                    pause = true;
+                }
+            case KeyEvent.VK_ENTER:
+                
+                    inicio = false;
+                
         }
     }
 

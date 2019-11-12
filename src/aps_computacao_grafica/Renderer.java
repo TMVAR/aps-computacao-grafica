@@ -44,9 +44,9 @@ public class Renderer {
                 System.exit(0);
             }
         });        
-        window.setSize(500, 500);
-        window.setResizable(true);
-        window.setFullscreen(false);
+        //window.setSize(500, 500);
+        //window.setResizable(true);
+        window.setFullscreen(true);
         window.setVisible(true);
         
     }
