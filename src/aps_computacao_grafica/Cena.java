@@ -19,7 +19,6 @@ import textura.Textura;
  */
 public class Cena implements GLEventListener, KeyListener {
 
-    private MouseListener mouse;
     Random rand = new Random();
     private float angulo = 0;
     private GL2 gl;
@@ -173,51 +172,131 @@ public class Cena implements GLEventListener, KeyListener {
     }
 
     public void animation() {
-        gl.glPushMatrix();
-        gl.glTranslated(atualX, atualY, 0);
-        bola();
-        gl.glPopMatrix();
-        if(verificaBolaRebatida()){
-            incrementaY = true;
-            decrementaY = false;
-            if(incrementaX){
-                incrementaX = false;
-                decrementaX = true;
-            }else{
-                incrementaX = true;
-                decrementaX = false;
-            }
-        
-        
-        }
         if (primeiraReta) {
             incrementaY();
             incrementaX();
+
             if (atualY == 100) {
                 primeiraReta = false;
             }
         }
-        if (atualX == 100) {
-            valorDecrementoX = -(rand.nextInt(2));
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        if (verificaBolaRebatida()) {
+            incrementaY = true;
+            decrementaY = false;
+            if(atualX > barraX){
+                incrementaX = true;
+                decrementaX = false;
+            }else if(atualX < barraX){
+                decrementaX = true;
+                incrementaX = false;
+            }else if(atualX == barraX){
+                incrementaX = false;
+                decrementaX = false;
+            }        
+                     
+            
+
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+        /*if (verificaBolaRebatida()) {
+            incrementaY = true;
+            decrementaY = false;
+            if (atualX != barraX && atualX > barraX) {
+                if (atualX < 100 || atualX > -100) {
+
+                } else if (incrementaX) {
+                    incrementaX = true;
+                    decrementaX = false;
+                }
+            } else if (atualX != barraX && atualX < barraX) {
+                decrementaX = true;
+                incrementaX = false;      
+                
+                
+                if (atualX < 100 || atualX > -100) {
+                    
+                } else if (!incrementaX) {
+                    incrementaX = true;
+                    decrementaX = false;
+                }
+            } else {
+                incrementaX = false;
+                decrementaX = false;
+
+            }
+
+        }*/
+        //Bateu na parede direita
+        if (atualX >= 98 && atualX <= 105) {
+            if (rand.nextBoolean()) {
+                valorDecrementoX = -(rand.nextInt(2));
+            } else {
+                valorDecrementoX = rand.nextInt(2);
+            }
             incrementaX = false;
             decrementaX = true;
         }
-        if (atualX == -100) {
-            valorIncrementoX = rand.nextInt(2);
+        
+        //Bateu na parede esquerda
+        if (atualX <= -98 && atualX >= -105) {
+            if (rand.nextBoolean()) {
+                valorIncrementoX = rand.nextInt(2);
+            } else {
+                valorIncrementoX = -(rand.nextInt(2));
+            }
             incrementaX = true;
             decrementaX = false;
         }
-        if (atualY == 100) {
-            valorDecrementoY = -(rand.nextInt(2));
+        
+        //Bateu na parede de cima
+        if (atualY >= 98 && atualY <= 105) {
+            if (rand.nextBoolean()) {
+                valorDecrementoY = -(rand.nextInt(2));
+            } else {
+                valorDecrementoY = rand.nextInt(2);
+            }
             incrementaY = false;
             decrementaY = true;
         }
-        if (atualY == -100) {
-            valorDecrementoY = rand.nextInt(2);
+        //Bateu na parede de baixo
+        if (atualY <= -98 && atualY >= -105) {
+            if (rand.nextBoolean()) {
+                valorIncrementoY = rand.nextInt(2);
+            } else {
+                valorIncrementoY = -(rand.nextInt(2));
+            }
             incrementaY = true;
             decrementaY = false;
         }
-
         if (incrementaX) {
             incrementaX();
         }
@@ -230,23 +309,24 @@ public class Cena implements GLEventListener, KeyListener {
         if (decrementaY) {
             decrementaY();
         }
-        if (barraX < 90 && barraX > -90) {
-            gl.glPushMatrix();
-            gl.glTranslated(barraX, 0, 0);
-            barra();
-            gl.glPopMatrix();
-        }
+
+        //Limita o movimento da barra apenas as bordas
         if (barraX >= 90) {
             barraX--;
         }
         if (barraX <= -90) {
             barraX++;
         }
-
+        //Movimenta a bola pelo cenario
+        gl.glPushMatrix();
+        gl.glTranslated(atualX, atualY, 0);
+        bola();
+        gl.glPopMatrix();
+        movimentaBarra();
     }
 
     public boolean verificaBolaRebatida() {
-        return atualX <= (barraX + 10) && atualX >= (barraX - 10) && atualY == -85;
+        return atualX >= (barraX - 11) && atualX <= (barraX + 11) && atualY <= -83 && atualY >= -86;
     }
 
     public void incrementaY() {
@@ -266,7 +346,13 @@ public class Cena implements GLEventListener, KeyListener {
     }
 
     public void movimentaBarra() {
-
+        //Movimenta a barra no eixo X
+        if (barraX < 90 && barraX > -90) {
+            gl.glPushMatrix();
+            gl.glTranslated(barraX, 0, 0);
+            barra();
+            gl.glPopMatrix();
+        }
     }
 
     public void desenhaTexto(GL2 gl, int x, int y, String frase) {
@@ -346,43 +432,13 @@ public class Cena implements GLEventListener, KeyListener {
                 break;
 
             case 'a': //inicia animacao
-                barraX--;
+                barraX = barraX - 3;
                 break;
 
             case 'd': //para a animacao
-                barraX++;
+                barraX = barraX + 3;
                 break;
-            case '+':
-                if (limite <= 20.0f) {
-                    limite += 0.1f;
-                }
-                System.out.println("limite: " + limite);
-                break;
-            case '-':
-                if (limite >= 0.0f) {
-                    limite -= 0.1f;
-                }
-                System.out.println("limite: " + limite);
-                break;
-            //modifica o tipo de filtro
-            case 'f':
-                if (filtro == GL2.GL_LINEAR) {
-                    filtro = GL2.GL_NEAREST;
-                    System.out.println("filtro: GL_NEAREST");
-                } else {
-                    filtro = GL2.GL_LINEAR;
-                    System.out.println("filtro: GL_LINEAR");
-                }
-                break;
-            //modifica a forma de envelope
-            case 'w':
-                if (wrap == GL2.GL_REPEAT) {
-                    wrap = GL2.GL_CLAMP;
-                } else {
-                    wrap = GL2.GL_REPEAT;
-                }
-            case 's':
-                System.exit(0);
+
         }
     }
 

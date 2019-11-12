@@ -26,14 +26,14 @@ public class Renderer {
         window = GLWindow.create(caps);
         
         
-        //window.setResizable(false);
+        
         
         Cena cena = new Cena();
         window.addGLEventListener(cena); //adiciona a Cena a Janela  
         window.addKeyListener(cena); //registra o teclado na janela
         
         //window.requestFocus();
-        FPSAnimator animator = new FPSAnimator(window, 244);
+        FPSAnimator animator = new FPSAnimator(window, 60);
         animator.start(); //inicia o loop de animação
         
         //encerrar a aplicacao adequadamente
@@ -44,7 +44,9 @@ public class Renderer {
                 System.exit(0);
             }
         });        
-        window.setFullscreen(true);
+        window.setSize(500, 500);
+        window.setResizable(true);
+        window.setFullscreen(false);
         window.setVisible(true);
         
     }
