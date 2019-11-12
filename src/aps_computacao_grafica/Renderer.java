@@ -2,6 +2,7 @@ package aps_computacao_grafica;
 
 
 
+
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.opengl.GLWindow;
@@ -14,8 +15,8 @@ import com.jogamp.opengl.util.FPSAnimator;
  */
 public class Renderer {
     private static GLWindow window = null;
-    public static int screenWidth = 600;
-    public static int screenHeight = 600;
+    public static int screenWidth = 400;
+    public static int screenHeight = 400;
             
     //Cria a janela de rendeziração do JOGL
     public static void init(){        
@@ -23,7 +24,8 @@ public class Renderer {
         GLProfile profile = GLProfile.get(GLProfile.GL2);
         GLCapabilities caps = new GLCapabilities(profile);        
         window = GLWindow.create(caps);
-        window.setSize(screenWidth, screenHeight);
+        
+        
         //window.setResizable(false);
         
         Cena cena = new Cena();
@@ -31,7 +33,7 @@ public class Renderer {
         window.addKeyListener(cena); //registra o teclado na janela
         
         //window.requestFocus();
-        FPSAnimator animator = new FPSAnimator(window, 60);
+        FPSAnimator animator = new FPSAnimator(window, 244);
         animator.start(); //inicia o loop de animação
         
         //encerrar a aplicacao adequadamente
@@ -42,8 +44,9 @@ public class Renderer {
                 System.exit(0);
             }
         });        
-        //window.setFullscreen(true);
+        window.setFullscreen(true);
         window.setVisible(true);
+        
     }
   
     public static void main(String[] args) {
