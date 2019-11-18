@@ -2,14 +2,11 @@ package aps_computacao_grafica;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
-import com.jogamp.newt.event.MouseListener;
-import static com.jogamp.opengl.GL.GL_POINTS;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT; //primitivas 3D
-import java.text.NumberFormat;
 import java.util.Random;
 import textura.Textura;
 
@@ -20,26 +17,25 @@ import textura.Textura;
 public class Cena implements GLEventListener, KeyListener {
 
     Random rand = new Random();
-    private float angulo = 0;
+
     private GL2 gl;
     private GLU glu;
     private GLUT glut;
-    private int tonalizacao = GL2.GL_SMOOTH;
+    private final int tonalizacao = GL2.GL_SMOOTH;
     float luzR = 0.2f, luzG = 0.2f, luzB = 0.2f;
-    private float incAngulo = 0;
 
     // Atributos    
     private float limite;
-    float xMin, xMax, yMin, yMax, zMin, zMax;
-    private boolean triangulo = false;
+
     private boolean primeiraReta = true;
-    private float inicioY = 0;
+
     private float atualY = 0;
-    private float finalY = 0;
-    private float inicioX = 0;
+
     private float atualX = 0;
-    private float finalX = 0;
+
     private float barraX = 0;
+    
+    private boolean stop = false;
 
     private boolean incrementaX;
     private boolean incrementaY;
@@ -54,20 +50,18 @@ public class Cena implements GLEventListener, KeyListener {
     private int valorDecrementoX;
     private int valorDecrementoY;
 
+    private int placar;
+    private int vidas = 5;
     //Referencia para classe Textura
     private Textura textura = null;
     //Quantidade de Texturas a ser carregada
-    private int totalTextura = 8;
+    private final int totalTextura = 4;
 
     //Constantes para identificar as imagens
-    public static final String FACE1 = "imagens/dado/1_dado.png";
-    public static final String FACE2 = "imagens/dado/2_dado.png";
-    public static final String FACE3 = "imagens/dado/3_dado.png";
-    public static final String FACE4 = "imagens/dado/4_dado.png";
-    public static final String FACE5 = "imagens/dado/5_dado.png";
-    public static final String FACE6 = "imagens/dado/6_dado.png";
     public static final String BOLA = "imagens/pong/bola-tenis.jpg";
     public static final String BARRA = "imagens/pong/barra.jfif";
+    public static final String CORACAO = "imagens/pong/coracao.jfif";
+    public static final String PAREDE = "imagens/pong/parede.jpg";
 
     private int filtro = GL2.GL_LINEAR; ////GL_NEAREST ou GL_LINEAR
     private int wrap = GL2.GL_REPEAT;  //GL.GL_REPEAT ou GL.GL_CLAMP
@@ -78,8 +72,6 @@ public class Cena implements GLEventListener, KeyListener {
         //dados iniciais da cena
         GL2 gl = drawable.getGL().getGL2();
 
-        angulo = 0;
-        incAngulo = 0;
         limite = 1;
 
         //Cria uma instancia da Classe Textura indicando a quantidade de texturas
@@ -101,8 +93,13 @@ public class Cena implements GLEventListener, KeyListener {
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
         gl.glLoadIdentity(); //lê a matriz identidade
         if (inicio) {
-            desenhaTextoGrande(gl, -5, 0, "PONG");
-            desenhaTextoPequeno(gl, -8, -20, "Aperte Enter para iniciar");
+
+            desenhaTextoGrande(gl, -5, 50, "PONG");
+            desenhaTextoPequeno(gl, -8, 30, "» Aperte Enter para iniciar");
+            desenhaTextoPequeno(gl, -50, 0, "» Regras:");
+            desenhaTextoPequeno(gl, -50, -10, "» Utilize 'J' e 'K' para mover o bastão");
+            desenhaTextoPequeno(gl, -50, -20, "» Ao atigir 200 pontos será inicioado o nivel 2");
+            desenhaTextoPequeno(gl, -50, -30, "» Ao atigir perder às 5 vidas o jogo encerra");
         } else {
             if (pause) {
                 desenhaTextoGrande(gl, 0, 0, "PAUSE");
@@ -133,6 +130,37 @@ public class Cena implements GLEventListener, KeyListener {
         }
     }
 
+    public void imprimePontos(GL2 gl, int x, int y, String frase) {
+
+        glut = new GLUT(); //objeto da biblioteca glut
+        gl.glRasterPos2f(x, y);
+        glut.glutBitmapString(GLUT.BITMAP_TIMES_ROMAN_24, frase);
+    }
+
+    public void imprimiVidas() {
+        int j = 0;
+        for (int i = 0; i < vidas; i++, j = j + 10) {
+
+            gl.glPushMatrix();
+            gl.glTranslated(j, 90, 0);
+            textura.gerarTextura(gl, CORACAO, 0);
+            gl.glBegin(GL2.GL_QUADS);
+            //coordenadas da Textura            //coordenadas do quads
+            gl.glTexCoord2f(0.0f, limite);
+            gl.glVertex3f(-2.0f, -2.0f, 0.0f);
+            gl.glTexCoord2f(limite, limite);
+            gl.glVertex3f(2.0f, -2.0f, 0.0f);
+            gl.glTexCoord2f(limite, 0.0f);
+            gl.glVertex3f(2.0f, 2.0f, 0.0f);
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex3f(-2.0f, 2.0f, 0.0f);
+            gl.glEnd();
+            textura.desabilitarTextura(gl, 0);
+            gl.glPopMatrix();
+        }
+
+    }
+
     public void desenhaTextoGrande(GL2 gl, int x, int y, String frase) {
         glut = new GLUT(); //objeto da biblioteca glut
         gl.glRasterPos2f(x, y);
@@ -146,6 +174,9 @@ public class Cena implements GLEventListener, KeyListener {
     }
 
     public void bola() {
+
+        gl.glPushMatrix();
+        gl.glTranslated(atualX, atualY, 0);
 
         textura.gerarTextura(gl, BOLA, 0);
         gl.glBegin(GL2.GL_QUADS);
@@ -165,6 +196,7 @@ public class Cena implements GLEventListener, KeyListener {
         gl.glEnd();
         textura.desabilitarTextura(gl, 0);
 
+        gl.glPopMatrix();
     }
 
     public void barra() {
@@ -172,16 +204,16 @@ public class Cena implements GLEventListener, KeyListener {
         gl.glBegin(GL2.GL_QUADS);
         //coordenadas da Textura            //coordenadas do quads
         gl.glTexCoord2f(0.0f, limite);
-        gl.glVertex3f(-10.0f, -90.0f, 0.0f);
+        gl.glVertex3f(-20.0f, -90.0f, 0.0f);
 
         gl.glTexCoord2f(limite, limite);
-        gl.glVertex3f(10.0f, -90.0f, 0.0f);
+        gl.glVertex3f(20.0f, -90.0f, 0.0f);
 
         gl.glTexCoord2f(limite, 0.0f);
-        gl.glVertex3f(10.0f, -85.0f, 0.0f);
+        gl.glVertex3f(20.0f, -85.0f, 0.0f);
 
         gl.glTexCoord2f(0.0f, 0.0f);
-        gl.glVertex3f(-10.0f, -85.0f, 0.0f);
+        gl.glVertex3f(-20.0f, -85.0f, 0.0f);
 
         gl.glEnd();
         textura.desabilitarTextura(gl, 0);
@@ -189,9 +221,51 @@ public class Cena implements GLEventListener, KeyListener {
     }
 
     public void animation() {
+        if(vidas == 0){
+            System.exit(0);
+        }
+        if(stop){
+        }
+        if (placar > 2) {
+            textura.gerarTextura(gl, PAREDE, 0);
+            gl.glBegin(GL2.GL_QUADS);
+            //coordenadas da Textura            //coordenadas do quads
+            gl.glTexCoord2f(0.0f, limite);
+            gl.glVertex3f(-10f, -10f, 0.0f);
+
+            gl.glTexCoord2f(limite, limite);
+            gl.glVertex3f(10f, -10f, 0.0f);
+
+            gl.glTexCoord2f(limite, 0.0f);
+            gl.glVertex3f(10f, 10f, 0.0f);
+
+            gl.glTexCoord2f(0.0f, 0.0f);
+            gl.glVertex3f(-10f, 10f, 0.0f);
+
+            gl.glEnd();
+            textura.desabilitarTextura(gl, 0);
+
+            if (verificaBolaRebatidaNoElementoCentral()) {
+                if (incrementaX) {
+                    incrementaX = false;
+                    decrementaX = true;
+                } else {
+                    incrementaX = true;
+                    decrementaX = false;
+                }
+                if (incrementaY) {
+                    incrementaY = false;
+                    decrementaY = true;
+                } else {
+                    incrementaY = true;
+                    decrementaY = false;
+                }
+
+            }
+        }
         if (primeiraReta) {
             incrementaY();
-            incrementaX();
+            decrementaX();
 
             if (atualY == 100) {
                 primeiraReta = false;
@@ -199,6 +273,7 @@ public class Cena implements GLEventListener, KeyListener {
         }
 
         if (verificaBolaRebatida()) {
+            placar++;
             incrementaY = true;
             decrementaY = false;
             if (atualX > barraX) {
@@ -214,34 +289,6 @@ public class Cena implements GLEventListener, KeyListener {
 
         }
 
-        /*if (verificaBolaRebatida()) {
-            incrementaY = true;
-            decrementaY = false;
-            if (atualX != barraX && atualX > barraX) {
-                if (atualX < 100 || atualX > -100) {
-
-                } else if (incrementaX) {
-                    incrementaX = true;
-                    decrementaX = false;
-                }
-            } else if (atualX != barraX && atualX < barraX) {
-                decrementaX = true;
-                incrementaX = false;      
-                
-                
-                if (atualX < 100 || atualX > -100) {
-                    
-                } else if (!incrementaX) {
-                    incrementaX = true;
-                    decrementaX = false;
-                }
-            } else {
-                incrementaX = false;
-                decrementaX = false;
-
-            }
-
-        }*/
         //Bateu na parede direita
         if (atualX >= 98 && atualX <= 105) {
             if (rand.nextBoolean()) {
@@ -276,6 +323,7 @@ public class Cena implements GLEventListener, KeyListener {
         }
         //Bateu na parede de baixo
         if (atualY <= -98 && atualY >= -105) {
+            vidas = vidas - 1;
             if (rand.nextBoolean()) {
                 valorIncrementoY = rand.nextInt(2);
             } else {
@@ -304,16 +352,27 @@ public class Cena implements GLEventListener, KeyListener {
         if (barraX <= -90) {
             barraX++;
         }
+
         //Movimenta a bola pelo cenario
-        gl.glPushMatrix();
-        gl.glTranslated(atualX, atualY, 0);
-        bola();
-        gl.glPopMatrix();
         movimentaBarra();
+        imprimiVidas();
+        imprimePontos(gl, -50, 85, placar + "");
+        bola();
     }
 
     public boolean verificaBolaRebatida() {
-        return atualX >= (barraX - 11) && atualX <= (barraX + 11) && atualY <= -83 && atualY >= -86;
+        return atualX >= (barraX - 21) && atualX <= (barraX + 21) && atualY <= -83 && atualY >= -86;
+    }
+
+    public boolean verificaBolaRebatidaNoElementoCentral() {
+        return //Superior  
+                atualY == 12 && atualX > -12 && atualX < 12
+                //Inferior
+                || atualY == -12 && atualX > -12 && atualX < 12
+                //Direito
+                || atualX == 12 && atualY > -12 && atualY < 12
+                //Esquerdo
+                || atualX == -12 && atualY > -12 && atualY < 12;
     }
 
     public void incrementaY() {
@@ -334,7 +393,7 @@ public class Cena implements GLEventListener, KeyListener {
 
     public void movimentaBarra() {
         //Movimenta a barra no eixo X
-        if (barraX < 90 && barraX > -90) {
+        if (barraX < 80 && barraX > -80) {
             gl.glPushMatrix();
             gl.glTranslated(barraX, 0, 0);
             barra();
@@ -372,14 +431,6 @@ public class Cena implements GLEventListener, KeyListener {
         gl.glDisable(GL2.GL_LIGHTING);
     }
 
-    // Animacao de rotacao do Cubo
-    private void rotacionarCubo() {
-        angulo = angulo + incAngulo;
-        if (angulo > 360f) {
-            angulo = angulo - 360;
-        }
-    }
-
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         //obtem o contexto grafico Opengl
@@ -413,23 +464,30 @@ public class Cena implements GLEventListener, KeyListener {
                 System.exit(0);
                 break;
 
-            case 'j'://inicia animacao
+            case 'j' | 'J'://inicia animacao
+
                 barraX = barraX - 6;
+
                 break;
 
-            case 'l': //para a animacao
+            case 'l' | 'L': //para a animacao
+
                 barraX = barraX + 6;
+
                 break;
-            case 'p':
+            case 'p' | 'P':
                 if (pause) {
                     pause = false;
                 } else {
                     pause = true;
                 }
+                break;
             case KeyEvent.VK_ENTER:
-                
-                    inicio = false;
-                
+                inicio = false;
+                break;
+            case 's' | 'S':
+                System.exit(0);
+                break;
         }
     }
 
